@@ -192,3 +192,25 @@ impl From<H256> for BlockId {
         BlockId::Hash(hash)
     }
 }
+
+
+
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
+pub struct InternalBlockMassbit {
+    pub extrinsics: Vec<String>,
+}
+
+
+
+/// MASSBIT SUBSTRATE The block type returned from RPC calls 
+/// This is generic over a `TX` type.
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
+// pub struct BlockMassbitSubstrate<TX> {
+pub struct BlockMassbitSubstrate<> {
+    /// Hash of the block
+    pub hash: Option<H256>,
+
+    pub block: InternalBlockMassbit,
+    // pub block: Vec<Bytes>,
+    pub justification: Option<String>,
+}
