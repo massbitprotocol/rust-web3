@@ -201,16 +201,18 @@ pub struct InternalBlockMassbit {
 }
 
 
-
-/// MASSBIT SUBSTRATE The block type returned from RPC calls 
+/// MASSBIT SUBSTRATE The block type returned from RPC calls
 /// This is generic over a `TX` type.
 #[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
-// pub struct BlockMassbitSubstrate<TX> {
-pub struct BlockMassbitSubstrate<> {
-    /// Hash of the block
-    pub hash: Option<H256>,
-
-    pub block: InternalBlockMassbit,
-    // pub block: Vec<Bytes>,
+pub struct SubstrateBlock<> {
+    pub block: blockHeader,
     pub justification: Option<String>,
+}
+
+
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
+pub struct SubstrateVersion<> {
+    // Parse spec Version, not sure if this is the same as chain ID
+    #[serde(rename = "specVersion")]
+    pub spec_version: u32,
 }

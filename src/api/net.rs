@@ -6,6 +6,10 @@ use crate::types::U256;
 
 use crate::Transport;
 
+use crate::types::{
+    SubstrateVersion
+};
+
 /// `Net` namespace
 #[derive(Debug, Clone)]
 pub struct Net<T> {
@@ -27,8 +31,12 @@ impl<T: Transport> Namespace<T> for Net<T> {
 
 impl<T: Transport> Net<T> {
     /// Returns protocol version
-    pub fn version(&self) -> CallFuture<String, T::Out> {
-        CallFuture::new(self.transport.execute("net_version", vec![]))
+    // pub fn version(&self) -> CallFuture<String, T::Out> {
+    //     CallFuture::new(self.transport.execute("net_version", vec![]))
+    // }
+
+    pub fn substrate_version(&self) -> CallFuture<SubstrateVersion, T::Out> {
+        CallFuture::new(self.transport.execute("state_getRuntimeVersion", vec![]))
     }
 
     /// Returns number of peers connected to node.

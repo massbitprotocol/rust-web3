@@ -4,7 +4,7 @@ use crate::api::Namespace;
 use crate::helpers::{self, CallFuture};
 use crate::types::{
     Address, Block, BlockId, BlockNumber, Bytes, CallRequest, Filter, Index, Log, SyncState, Transaction,
-    TransactionId, TransactionReceipt, TransactionRequest, Work, H256, H520, H64, U256, U64, BlockMassbitSubstrate,
+    TransactionId, TransactionReceipt, TransactionRequest, Work, H256, H520, H64, U256, U64, SubstrateBlock,
 };
 use crate::Transport;
 
@@ -119,9 +119,14 @@ impl<T: Transport> Eth<T> {
         CallFuture::new(result)
     }
 
+
+    // Massbit get latest block from substrate
+    pub fn substrate_latest_block(&self) -> CallFuture<Option<Block<H256>>, T::Out> {
+        CallFuture::new(self.transport.execute("chain_getBlock", vec![]))
+    }
     /// MASSBIT Custom call to substrate to get block
     // pub fn massbit_substrate_block(&self, block: BlockId) -> CallFuture<Option<BlockMassbitSubstrate<H256>>, T::Out> {
-    pub fn massbit_substrate_block(&self, block: BlockId) -> CallFuture<Option<BlockMassbitSubstrate<>>, T::Out> {
+    pub fn massbit_substrate_block(&self, block: BlockId) -> CallFuture<Option<H256>, T::Out> {
       let include_txs = helpers::serialize(&false);
 
       let result = match block {
@@ -139,7 +144,7 @@ impl<T: Transport> Eth<T> {
           }
           BlockId::Number(num) => {
             let num = helpers::serialize(&num);
-            self.transport.execute("chain_getBlock", vec![])
+            self.transport.execute("chain_getBlockHash", vec![])
         }
       };
       CallFuture::new(result)
