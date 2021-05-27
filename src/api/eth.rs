@@ -3,11 +3,13 @@
 use crate::api::Namespace;
 use crate::helpers::{self, CallFuture};
 use crate::types::{
+    // Address, Block, BlockId, BlockNumber, Bytes, CallRequest, Filter, Index, Log, SyncState, Transaction,
     Address, Block, BlockId, BlockNumber, Bytes, CallRequest, Filter, Index, Log, SyncState, Transaction,
-    TransactionId, TransactionReceipt, TransactionRequest, Work, H256, H520, H64, U256, U64, SubstrateBlock,
+    TransactionId, TransactionReceipt, TransactionRequest, Work, H256, H520, H64, U256, U64,
 };
 use crate::Transport;
-
+// use sp_runtime::generic::{Block, Header};
+// use sp_runtime::traits::{MaybeSerialize};
 
 /// `Eth` namespace
 #[derive(Debug, Clone)]
@@ -102,7 +104,7 @@ impl<T: Transport> Eth<T> {
     }
 
     /// Get block details with transaction hashes.
-    pub fn block(&self, block: BlockId) -> CallFuture<Option<Block<H256>>, T::Out> {
+    pub fn block(&self, block: BlockId) -> CallFuture<Option<Block<H256, Vec<u8>>>, T::Out> {
         let include_txs = helpers::serialize(&false);
 
         let result = match block {
@@ -112,7 +114,9 @@ impl<T: Transport> Eth<T> {
             }
             BlockId::Number(num) => {
                 let num = helpers::serialize(&num);
-                self.transport.execute("eth_getBlockByNumber", vec![num, include_txs])
+                // self.transport.execute("eth_getBlockByNumber", vec![num, include_txs])
+                self.transport.execute("chain_getBlockHash", vec![num])
+                // self.transport.execute("chain_getBlock", vec![hash])
             }
         };
 
@@ -121,9 +125,9 @@ impl<T: Transport> Eth<T> {
 
 
     // Massbit get latest block from substrate
-    pub fn substrate_latest_block(&self) -> CallFuture<Option<Block<H256>>, T::Out> {
-        CallFuture::new(self.transport.execute("chain_getBlock", vec![]))
-    }
+    // pub fn substrate_latest_block(&self) -> CallFuture<Option<Block<H256>>, T::Out> {
+    //     CallFuture::new(self.transport.execute("chain_getBlock", vec![]))
+    // }
     /// MASSBIT Custom call to substrate to get block
     // pub fn massbit_substrate_block(&self, block: BlockId) -> CallFuture<Option<BlockMassbitSubstrate<H256>>, T::Out> {
     pub fn massbit_substrate_block(&self, block: BlockId) -> CallFuture<Option<H256>, T::Out> {
@@ -151,7 +155,7 @@ impl<T: Transport> Eth<T> {
    }
 
     /// Get block details with full transaction objects.
-    pub fn block_with_txs(&self, block: BlockId) -> CallFuture<Option<Block<Transaction>>, T::Out> {
+    pub fn block_with_txs(&self, block: BlockId) -> CallFuture<Option<Block<Transaction,Vec<u8>>>, T::Out> {
         let include_txs = helpers::serialize(&true);
 
         let result = match block {
@@ -252,7 +256,7 @@ impl<T: Transport> Eth<T> {
     }
 
     /// Get uncle by block ID and uncle index -- transactions only has hashes.
-    pub fn uncle(&self, block: BlockId, index: Index) -> CallFuture<Option<Block<H256>>, T::Out> {
+    pub fn uncle(&self, block: BlockId, index: Index) -> CallFuture<Option<Block<H256,Vec<u8>>>, T::Out> {
         let index = helpers::serialize(&index);
 
         let result = match block {

@@ -1,6 +1,16 @@
 use crate::types::{Bytes, H160, H2048, H256, H64, U256, U64};
 use serde::{ser::SerializeStruct, Deserialize, Serialize, Serializer};
 
+use sp_std::{
+    convert::TryFrom,
+    fmt::Debug,
+};
+
+use sp_runtime::traits::{Hash as HashT};
+
+/// Use type from Polkadot
+// use sp_runtime::generic::{Block as SubstrateBlock};
+
 /// The block header type returned from RPC calls.
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct BlockHeader {
@@ -52,70 +62,111 @@ pub struct BlockHeader {
     pub nonce: Option<H64>,
 }
 
-/// The block type returned from RPC calls.
-/// This is generic over a `TX` type.
+// pub struct Header<Number: Copy + Into<U256> + TryFrom<U256>, Hash: HashT> {
+//     /// The parent hash.
+//     pub parent_hash: Hash::Output,
+//     /// The block number.
+//     pub number: Number,
+//     /// The state trie merkle root
+//     pub state_root: Hash::Output,
+//     /// The merkle root of the extrinsics.
+//     pub extrinsics_root: Hash::Output,
+//     // /// A chain-specific digest of data useful for light clients or referencing auxiliary data.
+//     //  pub digest: Digest<Hash::Output>,
+// }
+
+
+/// Abstraction over a substrate block.
 #[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
-pub struct Block<TX> {
-    /// Hash of the block
-    pub hash: Option<H256>,
-    /// Hash of the parent
-    #[serde(rename = "parentHash")]
-    pub parent_hash: H256,
-    /// Hash of the uncles
-    #[serde(rename = "sha3Uncles")]
-    #[serde(default)] // Celo doesn't have this field.
-    pub uncles_hash: H256,
-    /// Miner/author's address.
-    #[serde(rename = "miner")]
-    pub author: H160,
-    /// State root hash
-    #[serde(rename = "stateRoot")]
-    pub state_root: H256,
-    /// Transactions root hash
-    #[serde(rename = "transactionsRoot")]
-    pub transactions_root: H256,
-    /// Transactions receipts root hash
-    #[serde(rename = "receiptsRoot")]
-    pub receipts_root: H256,
-    /// Block number. None if pending.
-    pub number: Option<U64>,
-    /// Gas Used
-    #[serde(rename = "gasUsed")]
-    pub gas_used: U256,
-    /// Gas Limit
-    #[serde(rename = "gasLimit")]
-    #[serde(default)] // Celo doesn't have this field.
-    pub gas_limit: U256,
-    /// Extra data
-    #[serde(rename = "extraData")]
-    pub extra_data: Bytes,
-    /// Logs bloom
-    #[serde(rename = "logsBloom")]
-    pub logs_bloom: Option<H2048>,
-    /// Timestamp
-    pub timestamp: U256,
-    /// Difficulty
-    #[serde(default)] // Celo doesn't have this field.
-    pub difficulty: U256,
-    /// Total difficulty
-    #[serde(rename = "totalDifficulty")]
-    pub total_difficulty: Option<U256>,
-    /// Seal fields
-    #[serde(default, rename = "sealFields")]
-    pub seal_fields: Vec<Bytes>,
-    /// Uncles' hashes
-    #[serde(default)] // Celo doesn't have this field.
-    pub uncles: Vec<H256>,
-    /// Transactions
-    pub transactions: Vec<TX>,
-    /// Size in bytes
-    pub size: Option<U256>,
-    /// Mix Hash
-    #[serde(rename = "mixHash")]
-    pub mix_hash: Option<H256>,
-    /// Nonce
-    pub nonce: Option<H64>,
+pub struct Block<Header, Extrinsic> {
+    /// The block header.
+    pub header: Header,
+    /// The accompanying extrinsics.
+    pub extrinsics: Vec<Extrinsic>,
 }
+
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
+pub struct Header<Number: Copy + Into<U256> + TryFrom<U256>, Hash: HashT> {
+    /// The parent hash.
+    pub parent_hash: Hash::Output,
+    /// The block number.
+    #[cfg_attr(feature = "std", serde(
+    serialize_with = "serialize_number",
+    deserialize_with = "deserialize_number"))]
+    pub number: Number,
+    /// The state trie merkle root
+    pub state_root: Hash::Output,
+    /// The merkle root of the extrinsics.
+    pub extrinsics_root: Hash::Output,
+    //////A chain-specific digest of data useful for light clients or referencing auxiliary data.
+    // pub digest: Digest<Hash::Output>,
+}
+
+
+// // The block type returned from RPC calls.
+// // This is generic over a `TX` type.
+// #[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
+// pub struct Block<TX> {
+//     /// Hash of the block
+//     pub hash: Option<H256>,
+//     /// Hash of the parent
+//     #[serde(rename = "parentHash")]
+//     pub parent_hash: H256,
+//     /// Hash of the uncles
+//     #[serde(rename = "sha3Uncles")]
+//     #[serde(default)] // Celo doesn't have this field.
+//     pub uncles_hash: H256,
+//     /// Miner/author's address.
+//     #[serde(rename = "miner")]
+//     pub author: H160,
+//     /// State root hash
+//     #[serde(rename = "stateRoot")]
+//     pub state_root: H256,
+//     /// Transactions root hash
+//     #[serde(rename = "transactionsRoot")]
+//     pub transactions_root: H256,
+//     /// Transactions receipts root hash
+//     #[serde(rename = "receiptsRoot")]
+//     pub receipts_root: H256,
+//     /// Block number. None if pending.
+//     pub number: Option<U64>,
+//     /// Gas Used
+//     #[serde(rename = "gasUsed")]
+//     pub gas_used: U256,
+//     /// Gas Limit
+//     #[serde(rename = "gasLimit")]
+//     #[serde(default)] // Celo doesn't have this field.
+//     pub gas_limit: U256,
+//     /// Extra data
+//     #[serde(rename = "extraData")]
+//     pub extra_data: Bytes,
+//     /// Logs bloom
+//     #[serde(rename = "logsBloom")]
+//     pub logs_bloom: Option<H2048>,
+//     /// Timestamp
+//     pub timestamp: U256,
+//     /// Difficulty
+//     #[serde(default)] // Celo doesn't have this field.
+//     pub difficulty: U256,
+//     /// Total difficulty
+//     #[serde(rename = "totalDifficulty")]
+//     pub total_difficulty: Option<U256>,
+//     /// Seal fields
+//     #[serde(default, rename = "sealFields")]
+//     pub seal_fields: Vec<Bytes>,
+//     /// Uncles' hashes
+//     #[serde(default)] // Celo doesn't have this field.
+//     pub uncles: Vec<H256>,
+//     /// Transactions
+//     pub transactions: Vec<TX>,
+//     /// Size in bytes
+//     pub size: Option<U256>,
+//     /// Mix Hash
+//     #[serde(rename = "mixHash")]
+//     pub mix_hash: Option<H256>,
+//     /// Nonce
+//     pub nonce: Option<H64>,
+// }
 
 /// Block Number
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -194,25 +245,24 @@ impl From<H256> for BlockId {
 }
 
 
-
-#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
-pub struct InternalBlockMassbit {
-    pub extrinsics: Vec<String>,
-}
-
-
-/// MASSBIT SUBSTRATE The block type returned from RPC calls
-/// This is generic over a `TX` type.
-#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
-pub struct SubstrateBlock<> {
-    pub block: blockHeader,
-    pub justification: Option<String>,
-}
-
-
-#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
-pub struct SubstrateVersion<> {
-    // Parse spec Version, not sure if this is the same as chain ID
-    #[serde(rename = "specVersion")]
-    pub spec_version: u32,
-}
+// #[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
+// pub struct InternalBlockMassbit {
+//     pub extrinsics: Vec<String>,
+// }
+//
+//
+// /// MASSBIT SUBSTRATE The block type returned from RPC calls
+// /// This is generic over a `TX` type.
+// #[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
+// pub struct SubstrateBlock<> {
+//     pub block: blockHeader,
+//     pub justification: Option<String>,
+// }
+//
+//
+// #[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
+// pub struct SubstrateVersion<> {
+//     // Parse spec Version, not sure if this is the same as chain ID
+//     #[serde(rename = "specVersion")]
+//     pub spec_version: u32,
+// }
