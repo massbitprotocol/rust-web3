@@ -34,7 +34,7 @@ pub use self::traces::{
     AccountDiff, BlockTrace, ChangedType, Diff, MemoryDiff, StateDiff, StorageDiff, TraceType, TransactionTrace,
     VMExecutedOperation, VMOperation, VMTrace,
 };
-pub use self::transaction::{RawTransaction, Receipt as TransactionReceipt, Transaction};
+pub use self::transaction::{RawTransaction, Receipt as TransactionReceipt, Extrinsic};
 pub use self::transaction_id::TransactionId;
 pub use self::transaction_request::{CallRequest, TransactionCondition, TransactionRequest};
 pub use self::uint::{H128, H160, H2048, H256, H512, H520, H64, U128, U256, U64};

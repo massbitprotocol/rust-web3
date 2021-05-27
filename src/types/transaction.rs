@@ -1,35 +1,39 @@
 use crate::types::{Bytes, Index, Log, H160, H2048, H256, U256, U64};
 use serde::{Deserialize, Serialize};
 
-/// Description of a Transaction, pending or in the chain.
+// /// Description of a Transaction, pending or in the chain.
+// #[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
+// pub struct Transaction {
+//     /// Hash
+//     pub hash: H256,
+//     /// Nonce
+//     pub nonce: U256,
+//     /// Block hash. None when pending.
+//     #[serde(rename = "blockHash")]
+//     pub block_hash: Option<H256>,
+//     /// Block number. None when pending.
+//     #[serde(rename = "blockNumber")]
+//     pub block_number: Option<U64>,
+//     /// Transaction Index. None when pending.
+//     #[serde(rename = "transactionIndex")]
+//     pub transaction_index: Option<Index>,
+//     /// Sender
+//     pub from: H160,
+//     /// Recipient (None when contract creation)
+//     pub to: Option<H160>,
+//     /// Transfered value
+//     pub value: U256,
+//     /// Gas Price
+//     #[serde(rename = "gasPrice")]
+//     pub gas_price: U256,
+//     /// Gas amount
+//     pub gas: U256,
+//     /// Input data
+//     pub input: Bytes,
+// }
 #[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
-pub struct Transaction {
-    /// Hash
+pub struct Extrinsic {
     pub hash: H256,
-    /// Nonce
-    pub nonce: U256,
-    /// Block hash. None when pending.
-    #[serde(rename = "blockHash")]
-    pub block_hash: Option<H256>,
-    /// Block number. None when pending.
-    #[serde(rename = "blockNumber")]
-    pub block_number: Option<U64>,
-    /// Transaction Index. None when pending.
-    #[serde(rename = "transactionIndex")]
-    pub transaction_index: Option<Index>,
-    /// Sender
-    pub from: H160,
-    /// Recipient (None when contract creation)
-    pub to: Option<H160>,
-    /// Transfered value
-    pub value: U256,
-    /// Gas Price
-    #[serde(rename = "gasPrice")]
-    pub gas_price: U256,
-    /// Gas amount
-    pub gas: U256,
-    /// Input data
-    pub input: Bytes,
 }
 
 /// "Receipt" of an executed transaction: details of its execution.

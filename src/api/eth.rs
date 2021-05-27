@@ -4,7 +4,7 @@ use crate::api::Namespace;
 use crate::helpers::{self, CallFuture};
 use crate::types::{
     // Address, Block, BlockId, BlockNumber, Bytes, CallRequest, Filter, Index, Log, SyncState, Transaction,
-    Address, Block, BlockId, BlockNumber, Bytes, CallRequest, Filter, Index, Log, SyncState, Transaction,
+    Address, Block, BlockId, BlockNumber, Bytes, CallRequest, Filter, Index, Log, SyncState, Extrinsic,
     TransactionId, TransactionReceipt, TransactionRequest, Work, H256, H520, H64, U256, U64,
 };
 use crate::Transport;
@@ -104,7 +104,7 @@ impl<T: Transport> Eth<T> {
     }
 
     /// Get block details with transaction hashes.
-    pub fn block(&self, block: BlockId) -> CallFuture<Option<Block<H256, Vec<u8>>>, T::Out> {
+    pub fn block(&self, block: BlockId) -> CallFuture<Option<Block<Extrinsic>>, T::Out> {
         let include_txs = helpers::serialize(&false);
 
         let result = match block {
@@ -155,7 +155,7 @@ impl<T: Transport> Eth<T> {
    }
 
     /// Get block details with full transaction objects.
-    pub fn block_with_txs(&self, block: BlockId) -> CallFuture<Option<Block<Transaction,Vec<u8>>>, T::Out> {
+    pub fn block_with_txs(&self, block: BlockId) -> CallFuture<Option<Block<Extrinsic>>, T::Out> {
         let include_txs = helpers::serialize(&true);
 
         let result = match block {
@@ -225,7 +225,7 @@ impl<T: Transport> Eth<T> {
     }
 
     /// Get transaction
-    pub fn transaction(&self, id: TransactionId) -> CallFuture<Option<Transaction>, T::Out> {
+    pub fn transaction(&self, id: TransactionId) -> CallFuture<Option<Extrinsic>, T::Out> {
         let result = match id {
             TransactionId::Hash(hash) => {
                 let hash = helpers::serialize(&hash);
@@ -256,7 +256,7 @@ impl<T: Transport> Eth<T> {
     }
 
     /// Get uncle by block ID and uncle index -- transactions only has hashes.
-    pub fn uncle(&self, block: BlockId, index: Index) -> CallFuture<Option<Block<H256,Vec<u8>>>, T::Out> {
+    pub fn uncle(&self, block: BlockId, index: Index) -> CallFuture<Option<Block<Vec<u8>>>, T::Out> {
         let index = helpers::serialize(&index);
 
         let result = match block {
@@ -372,7 +372,7 @@ mod tests {
     use crate::api::Namespace;
     use crate::rpc::Value;
     use crate::types::{
-        Address, Block, BlockId, BlockNumber, Bytes, CallRequest, FilterBuilder, Log, SyncInfo, SyncState, Transaction,
+        Address, Block, BlockId, BlockNumber, Bytes, CallRequest, FilterBuilder, Log, SyncInfo, SyncState, Extrinsic,
         TransactionId, TransactionReceipt, TransactionRequest, Work, H256, H520, H64,
     };
 
@@ -588,7 +588,7 @@ mod tests {
       =>
       "eth_getBlockByNumber", vec![r#""pending""#, r#"true"#];
       ::serde_json::from_str(EXAMPLE_BLOCK).unwrap()
-      => Some(::serde_json::from_str::<Block<Transaction>>(EXAMPLE_BLOCK).unwrap())
+      => Some(::serde_json::from_str::<Block<Extrinsic >>(EXAMPLE_BLOCK).unwrap())
     );
 
     rpc_test! (
@@ -645,7 +645,7 @@ mod tests {
       =>
       "eth_getTransactionByHash", vec![r#""0x0000000000000000000000000000000000000000000000000000000000000123""#];
       ::serde_json::from_str(EXAMPLE_TX).unwrap()
-      => Some(::serde_json::from_str::<Transaction>(EXAMPLE_TX).unwrap())
+      => Some(::serde_json::from_str::<Extrinsic>(EXAMPLE_TX).unwrap())
     );
 
     rpc_test! (
@@ -666,7 +666,7 @@ mod tests {
       =>
       "eth_getTransactionByBlockNumberAndIndex", vec![r#""pending""#, r#""0x5""#];
       ::serde_json::from_str(EXAMPLE_TX).unwrap()
-      => Some(::serde_json::from_str::<Transaction>(EXAMPLE_TX).unwrap())
+      => Some(::serde_json::from_str::<Extrinsic>(EXAMPLE_TX).unwrap())
     );
 
     rpc_test! (

@@ -78,7 +78,8 @@ pub struct BlockHeader {
 
 /// Abstraction over a substrate block.
 #[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
-pub struct Block<Header, Extrinsic> {
+// pub struct Block<Header, Extrinsic> {
+pub struct Block<Extrinsic> {
     /// The block header.
     pub header: Header,
     /// The accompanying extrinsics.
@@ -86,18 +87,34 @@ pub struct Block<Header, Extrinsic> {
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
-pub struct Header<Number: Copy + Into<U256> + TryFrom<U256>, Hash: HashT> {
+// pub struct Header<Number: Copy + Into<U256> + TryFrom<U256>, Hash: HashT> {
+pub struct Header<> {
+    // /// The parent hash.
+    // pub parent_hash: Hash::Output,
+    // /// The block number.
+    // #[cfg_attr(feature = "std", serde(
+    // serialize_with = "serialize_number",
+    // deserialize_with = "deserialize_number"))]
+    // // pub number: Number,
+    // /// The state trie merkle root
+    // pub state_root: Hash::Output,
+    // /// The merkle root of the extrinsics.
+    // pub extrinsics_root: Hash::Output,
+    // //////A chain-specific digest of data useful for light clients or referencing auxiliary data.
+    // // pub digest: Digest<Hash::Output>,
+
+
     /// The parent hash.
-    pub parent_hash: Hash::Output,
+    pub parent_hash: Option<H256>,
     /// The block number.
     #[cfg_attr(feature = "std", serde(
     serialize_with = "serialize_number",
     deserialize_with = "deserialize_number"))]
-    pub number: Number,
+    pub number: Option<U64>,
     /// The state trie merkle root
-    pub state_root: Hash::Output,
+    pub state_root: H256,
     /// The merkle root of the extrinsics.
-    pub extrinsics_root: Hash::Output,
+    pub extrinsics_root: H256,
     //////A chain-specific digest of data useful for light clients or referencing auxiliary data.
     // pub digest: Digest<Hash::Output>,
 }
