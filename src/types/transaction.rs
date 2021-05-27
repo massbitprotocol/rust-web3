@@ -31,6 +31,7 @@ use serde::{Deserialize, Serialize};
 //     /// Input data
 //     pub input: Bytes,
 // }
+
 #[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 pub struct Extrinsic {
     pub hash: H256,
