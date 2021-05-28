@@ -8,6 +8,8 @@ use crate::types::{
     TransactionId, TransactionReceipt, TransactionRequest, Work, H256, H520, H64, U256, U64,
 };
 use crate::Transport;
+use crate::futures::Future;
+use jsonrpc_core::Value;
 // use sp_runtime::generic::{Block, Header};
 // use sp_runtime::traits::{MaybeSerialize};
 
@@ -103,6 +105,12 @@ impl<T: Transport> Eth<T> {
         CallFuture::new(self.transport.execute("eth_getLogs", vec![filter]))
     }
 
+    /// Get substrate block hash
+    fn block_hash(&self, block: BlockNumber) -> CallFuture<Option<Value>, T::Out> {
+        let num = helpers::serialize(&block);
+        CallFuture::new(self.transport.execute("chain_getBlockHash", vec![num]))
+    }
+
     /// Get block details with transaction hashes.
     pub fn block(&self, block: BlockId) -> CallFuture<Option<Block<H256>>, T::Out> {
         let include_txs = helpers::serialize(&false);
@@ -113,46 +121,13 @@ impl<T: Transport> Eth<T> {
                 self.transport.execute("eth_getBlockByHash", vec![hash, include_txs])
             }
             BlockId::Number(num) => {
-                let num = helpers::serialize(&num);
-                // self.transport.execute("eth_getBlockByNumber", vec![num, include_txs])
-                self.transport.execute("chain_getBlockHash", vec![num])
-                // self.transport.execute("chain_getBlock", vec![hash])
+                let hash = self.block_hash(num).wait();
+                self.transport.execute("chain_getBlock", vec![hash.unwrap().unwrap()])
             }
         };
 
         CallFuture::new(result)
     }
-
-
-    // Massbit get latest block from substrate
-    // pub fn substrate_latest_block(&self) -> CallFuture<Option<Block<H256>>, T::Out> {
-    //     CallFuture::new(self.transport.execute("chain_getBlock", vec![]))
-    // }
-    /// MASSBIT Custom call to substrate to get block
-    // pub fn massbit_substrate_block(&self, block: BlockId) -> CallFuture<Option<BlockMassbitSubstrate<H256>>, T::Out> {
-    pub fn massbit_substrate_block(&self, block: BlockId) -> CallFuture<Option<H256>, T::Out> {
-      let include_txs = helpers::serialize(&false);
-
-      let result = match block {
-          // BlockId::Hash(hash) => {
-          //     let hash = helpers::serialize(&hash);
-          //     self.transport.execute("eth_getBlockByHash", vec![hash, include_txs])
-          // }
-          // BlockId::Number(num) => {
-          //     let num = helpers::serialize(&num);
-          //     self.transport.execute("eth_getBlockByNumber", vec![num, include_txs])
-          // }
-          BlockId::Hash(hash) => {
-            let hash = helpers::serialize(&hash);
-            self.transport.execute("chain_getBlock", vec![hash, include_txs])
-          }
-          BlockId::Number(num) => {
-            let num = helpers::serialize(&num);
-            self.transport.execute("chain_getBlockHash", vec![])
-        }
-      };
-      CallFuture::new(result)
-   }
 
     /// Get block details with full transaction objects.
     pub fn block_with_txs(&self, block: BlockId) -> CallFuture<Option<Block<Extrinsic>>, T::Out> {
