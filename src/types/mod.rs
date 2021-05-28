@@ -17,7 +17,7 @@ mod work;
 
 // pub use sp_runtime::generic::{Block};
 // pub use self::block::{Block, BlockHeader, BlockId, BlockNumber};
-pub use self::block::{Block, BlockHeader, BlockId, BlockNumber};
+pub use self::block::{Block, SignedBlock, BlockHeader, BlockId, BlockNumber};
 pub use self::bytes::Bytes;
 pub use self::log::{Filter, FilterBuilder, Log};
 pub use self::parity_peers::{

@@ -4,7 +4,7 @@ use crate::api::Namespace;
 use crate::helpers::{self, CallFuture};
 use crate::types::{
     // Address, Block, BlockId, BlockNumber, Bytes, CallRequest, Filter, Index, Log, SyncState, Transaction,
-    Address, Block, BlockId, BlockNumber, Bytes, CallRequest, Filter, Index, Log, SyncState, Extrinsic,
+    Address, Block, SignedBlock, BlockId, BlockNumber, Bytes, CallRequest, Filter, Index, Log, SyncState, Extrinsic,
     TransactionId, TransactionReceipt, TransactionRequest, Work, H256, H520, H64, U256, U64,
 };
 use crate::Transport;
@@ -111,11 +111,18 @@ impl<T: Transport> Eth<T> {
         CallFuture::new(self.transport.execute("chain_getBlockHash", vec![num]))
     }
 
+    // /// Get signedBlock
+    // fn get_signed_block(&self, block: BlockNumber) -> CallFuture<Option<Block<H256>>, T::Out> {
+    //     let num = helpers::serialize(&block);
+    //     CallFuture::new(self.transport.execute("chain_getBlockHash", vec![num]))
+    // }
+
     /// Get block details with transaction hashes.
-    pub fn block(&self, block: BlockId) -> CallFuture<Option<Block<H256>>, T::Out> {
+    // pub fn block(&self, block: BlockId) -> CallFuture<Option<Block<H256>>, T::Out> {
+    pub fn block(&self, blockId: BlockId) -> CallFuture<Option<SignedBlock<H256>>, T::Out> {
         let include_txs = helpers::serialize(&false);
 
-        let result = match block {
+        let result = match blockId {
             BlockId::Hash(hash) => {
                 let hash = helpers::serialize(&hash);
                 self.transport.execute("eth_getBlockByHash", vec![hash, include_txs])
