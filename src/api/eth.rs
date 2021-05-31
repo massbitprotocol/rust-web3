@@ -12,6 +12,8 @@ use crate::futures::Future;
 use jsonrpc_core::Value;
 // use sp_runtime::generic::{Block, Header};
 // use sp_runtime::traits::{MaybeSerialize};
+use std::{thread, time};
+
 
 /// `Eth` namespace
 #[derive(Debug, Clone)]
@@ -30,6 +32,11 @@ impl<T: Transport> Namespace<T> for Eth<T> {
     fn transport(&self) -> &T {
         &self.transport
     }
+}
+
+enum Result<T, E> {
+    Ok(T),
+    Err(E),
 }
 
 impl<T: Transport> Eth<T> {
@@ -106,7 +113,7 @@ impl<T: Transport> Eth<T> {
     }
 
     /// Get substrate block hash
-    fn block_hash(&self, block: BlockNumber) -> CallFuture<Option<Value>, T::Out> {
+    fn block_hash(&self, block: BlockNumber) -> CallFuture<Option<String>, T::Out> {
         let num = helpers::serialize(&block);
         CallFuture::new(self.transport.execute("chain_getBlockHash", vec![num]))
     }
@@ -125,11 +132,22 @@ impl<T: Transport> Eth<T> {
         let result = match blockId {
             BlockId::Hash(hash) => {
                 let hash = helpers::serialize(&hash);
-                self.transport.execute("eth_getBlockByHash", vec![hash, include_txs])
+                // self.transport.execute("eth_getBlockByHash", vec![hash, include_txs])
+                self.transport.execute("chain_getBlock", vec![hash])
+
             }
+
             BlockId::Number(num) => {
                 let hash = self.block_hash(num).wait();
-                self.transport.execute("chain_getBlock", vec![hash.unwrap().unwrap()])
+                // let num = helpers::serialize(&blockId);
+                // self.transport.execute("chain_getBlockHash", vec![num])
+
+                // let hashValue = jsonrpc_core::to_value(hash.unwrap().unwrap());
+                if (hash) {
+                    let hashValue = jsonrpc_core::to_value("0xc9b4f10a94784babcf69ec1b2ba3562a6287c8a4dbdcf5a615f76222613e8bf6");
+                    self.transport.execute("chain_getBlock", vec![hashValue.unwrap()])
+                }
+                // self.transport.execute("chain_getBlock", vec![hash.unwrap().unwrap()])
             }
         };
 
@@ -137,22 +155,58 @@ impl<T: Transport> Eth<T> {
     }
 
     /// Get block details with full transaction objects.
-    pub fn block_with_txs(&self, block: BlockId) -> CallFuture<Option<Block<Extrinsic>>, T::Out> {
+    // pub fn block_with_txs(&self, block: BlockId) -> CallFuture<Option<Block<Extrinsic>>, T::Out> {
+    pub fn block_with_txs(&self, block: BlockId) -> CallFuture<Option<SignedBlock<String>>, T::Out> {
         let include_txs = helpers::serialize(&true);
 
         let result = match block {
+            // BlockId::Hash(hash) => {
+            //     let hash = helpers::serialize(&hash);
+            //     self.transport.execute("eth_getBlockByHash", vec![hash, include_txs])
+            // }
+            // BlockId::Number(num) => {
+            //     let num = helpers::serialize(&num);
+            //     self.transport.execute("eth_getBlockByNumber", vec![num, include_txs])
+            // }
             BlockId::Hash(hash) => {
-                let hash = helpers::serialize(&hash);
-                self.transport.execute("eth_getBlockByHash", vec![hash, include_txs])
+                let hashValue = jsonrpc_core::to_value("0xc9b4f10a94784babcf69ec1b2ba3562a6287c8a4dbdcf5a615f76222613e8bf6");
+                self.transport.execute("chain_getBlock", vec![hashValue.unwrap()])
             }
             BlockId::Number(num) => {
-                let num = helpers::serialize(&num);
-                self.transport.execute("eth_getBlockByNumber", vec![num, include_txs])
+                // Latest block value, fixed
+
+                let hashValue = jsonrpc_core::to_value("0x3fd515d132e03d75fdb511b37713157266d8fae76738ebf678cc776baaa8dd29");
+                self.transport.execute("chain_getBlock", vec![hashValue.unwrap()])
             }
         };
 
         CallFuture::new(result)
     }
+
+
+    /// Massbit get latest block
+    pub fn get_latest_block(&self, block: BlockId) -> CallFuture<Option<SignedBlock<String>>, T::Out> {
+        let include_txs = helpers::serialize(&true);
+
+        let result = match block {
+            BlockId::Hash(hash) => {
+                let hashValue = jsonrpc_core::to_value("0xc9b4f10a94784babcf69ec1b2ba3562a6287c8a4dbdcf5a615f76222613e8bf6");
+                self.transport.execute("chain_getBlock", vec![hashValue.unwrap()])
+            }
+            BlockId::Number(num) => {
+                let hash = self.block_hash(num).wait();
+
+                // let hashValue = jsonrpc_core::to_value("0xc9b4f10a94784babcf69ec1b2ba3562a6287c8a4dbdcf5a615f76222613e8bf6");
+                // self.transport.execute("chain_getBlock", vec![hashValue.unwrap()])
+                // println!("some number {}", );
+                let hashValue = jsonrpc_core::to_value(hash.unwrap().unwrap());
+                self.transport.execute("chain_getBlock", vec![hashValue.unwrap()])
+            }
+        };
+
+        CallFuture::new(result)
+    }
+
 
     /// Get number of transactions in block
     pub fn block_transaction_count(&self, block: BlockId) -> CallFuture<Option<U256>, T::Out> {

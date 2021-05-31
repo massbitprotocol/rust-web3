@@ -85,7 +85,7 @@ pub struct Header<> {
     #[serde(rename = "parentHash")]
     pub parent_hash: Option<H256>,
     /// The block number.
-    pub number: Option<U64>,
+    pub number: U64,
     #[serde(rename = "stateRoot")]
     pub state_root: H256,
     /// The merkle root of the extrinsics.
