@@ -118,8 +118,8 @@ impl<T: Transport> Eth<T> {
     // }
 
     /// Get block details with transaction hashes.
-    // pub fn block(&self, block: BlockId) -> CallFuture<Option<Block<H256>>, T::Out> {
-    pub fn block(&self, blockId: BlockId) -> CallFuture<Option<SignedBlock<H256>>, T::Out> {
+    // pub fn block(&self, blockId: BlockId) -> CallFuture<Option<SignedBlock<H256>>, T::Out> {
+        pub fn block(&self, blockId: BlockId) -> CallFuture<Option<SignedBlock<String>>, T::Out> {
         let include_txs = helpers::serialize(&false);
 
         let result = match blockId {

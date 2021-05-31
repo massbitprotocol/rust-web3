@@ -82,6 +82,7 @@ pub struct Block<T> {
 #[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 pub struct Header<> {
     /// The parent hash.
+    #[serde(rename = "parentHash")]
     pub parent_hash: Option<H256>,
     /// The block number.
     pub number: Option<U64>,
