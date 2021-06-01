@@ -77,6 +77,7 @@ pub struct Block<T> {
     pub header: Header,
     /// The accompanying extrinsics.
     pub extrinsics: Vec<T>,
+    pub hash: Option<String>,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]

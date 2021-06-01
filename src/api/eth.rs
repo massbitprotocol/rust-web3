@@ -105,8 +105,26 @@ impl<T: Transport> Eth<T> {
         CallFuture::new(self.transport.execute("eth_getLogs", vec![filter]))
     }
 
+
     /// Get substrate block hash
-    fn block_hash(&self, block: BlockNumber) -> CallFuture<Option<Value>, T::Out> {
+    pub fn separate_block_hash(&self, blockId: BlockId) -> CallFuture<Option<String>, T::Out> {
+        let result = match blockId {
+            BlockId::Hash(hash) => {
+                // Massbit Note: this isn't called
+                let hash = helpers::serialize(&hash);
+                self.transport.execute("eth_getBlockByHash", vec![hash])
+            }
+            BlockId::Number(num) => {
+                let num = helpers::serialize(&num);
+                self.transport.execute("chain_getBlockHash", vec![num])
+            }
+        };
+
+        CallFuture::new(result)
+    }
+
+    /// Get substrate block hash
+    pub fn block_hash(&self, block: BlockNumber) -> CallFuture<Option<Value>, T::Out> {
         let num = helpers::serialize(&block);
         CallFuture::new(self.transport.execute("chain_getBlockHash", vec![num]))
     }
@@ -117,15 +135,18 @@ impl<T: Transport> Eth<T> {
 
         let result = match blockId {
             BlockId::Hash(hash) => {
+                // Massbit Note: this isn't called
                 let hash = helpers::serialize(&hash);
                 self.transport.execute("eth_getBlockByHash", vec![hash, include_txs])
             }
             BlockId::Number(num) => {
                 let hash = self.block_hash(num).wait();
                 match hash {
-                    Ok(config) => self.transport.execute("chain_getBlock", vec![config.unwrap()]),
+                    Ok(value) => {
+                        self.transport.execute("chain_getBlock", vec![value.unwrap()])
+                    },
                     Err(e) => {
-                        println!("Get hash was null");
+                        println!("fn Block: Get hash was null");
                         self.transport.execute("chain_getBlock", vec![])
                     }
                 }
@@ -136,26 +157,20 @@ impl<T: Transport> Eth<T> {
     }
 
     /// Get block details with full transaction objects.
-    // pub fn block_with_txs(&self, block: BlockId) -> CallFuture<Option<Block<Extrinsic>>, T::Out> {
     pub fn block_with_txs(&self, block: BlockId) -> CallFuture<Option<SignedBlock<String>>, T::Out> {
         let include_txs = helpers::serialize(&true);
 
         let result = match block {
             BlockId::Hash(hash) => {
-                // let hash = helpers::serialize(&hash);
-                // self.transport.execute("eth_getBlockByHash", vec![hash, include_txs])
-
                 let hash = helpers::serialize(&hash);
                 self.transport.execute("chain_getBlock", vec![hash])
             }
             BlockId::Number(num) => {
-                // let num = helpers::serialize(&num);
-                // self.transport.execute("eth_getBlockByNumber", vec![num, include_txs])
                 let hash = self.block_hash(num).wait();
                 match hash {
                     Ok(config) => self.transport.execute("chain_getBlock", vec![config.unwrap()]),
                     Err(e) => {
-                        println!("Get hash was null");
+                        println!("fn block_with_txs: Get hash was null");
                         self.transport.execute("chain_getBlock", vec![])
                     }
                 }
