@@ -111,15 +111,8 @@ impl<T: Transport> Eth<T> {
         CallFuture::new(self.transport.execute("chain_getBlockHash", vec![num]))
     }
 
-    // /// Get signedBlock
-    // fn get_signed_block(&self, block: BlockNumber) -> CallFuture<Option<Block<H256>>, T::Out> {
-    //     let num = helpers::serialize(&block);
-    //     CallFuture::new(self.transport.execute("chain_getBlockHash", vec![num]))
-    // }
-
     /// Get block details with transaction hashes.
-    // pub fn block(&self, blockId: BlockId) -> CallFuture<Option<SignedBlock<H256>>, T::Out> {
-        pub fn block(&self, blockId: BlockId) -> CallFuture<Option<SignedBlock<String>>, T::Out> {
+    pub fn block(&self, blockId: BlockId) -> CallFuture<Option<SignedBlock<String>>, T::Out> {
         let include_txs = helpers::serialize(&false);
 
         let result = match blockId {
@@ -129,7 +122,13 @@ impl<T: Transport> Eth<T> {
             }
             BlockId::Number(num) => {
                 let hash = self.block_hash(num).wait();
-                self.transport.execute("chain_getBlock", vec![hash.unwrap().unwrap()])
+                match hash {
+                    Ok(config) => self.transport.execute("chain_getBlock", vec![config.unwrap()]),
+                    Err(e) => {
+                        println!("Get hash was null");
+                        self.transport.execute("chain_getBlock", vec![])
+                    }
+                }
             }
         };
 
@@ -137,17 +136,29 @@ impl<T: Transport> Eth<T> {
     }
 
     /// Get block details with full transaction objects.
-    pub fn block_with_txs(&self, block: BlockId) -> CallFuture<Option<Block<Extrinsic>>, T::Out> {
+    // pub fn block_with_txs(&self, block: BlockId) -> CallFuture<Option<Block<Extrinsic>>, T::Out> {
+    pub fn block_with_txs(&self, block: BlockId) -> CallFuture<Option<SignedBlock<String>>, T::Out> {
         let include_txs = helpers::serialize(&true);
 
         let result = match block {
             BlockId::Hash(hash) => {
+                // let hash = helpers::serialize(&hash);
+                // self.transport.execute("eth_getBlockByHash", vec![hash, include_txs])
+
                 let hash = helpers::serialize(&hash);
-                self.transport.execute("eth_getBlockByHash", vec![hash, include_txs])
+                self.transport.execute("chain_getBlock", vec![hash])
             }
             BlockId::Number(num) => {
-                let num = helpers::serialize(&num);
-                self.transport.execute("eth_getBlockByNumber", vec![num, include_txs])
+                // let num = helpers::serialize(&num);
+                // self.transport.execute("eth_getBlockByNumber", vec![num, include_txs])
+                let hash = self.block_hash(num).wait();
+                match hash {
+                    Ok(config) => self.transport.execute("chain_getBlock", vec![config.unwrap()]),
+                    Err(e) => {
+                        println!("Get hash was null");
+                        self.transport.execute("chain_getBlock", vec![])
+                    }
+                }
             }
         };
 
