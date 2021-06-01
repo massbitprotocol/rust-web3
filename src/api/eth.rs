@@ -106,8 +106,8 @@ impl<T: Transport> Eth<T> {
     }
 
 
-    /// Get substrate block hash
-    pub fn separate_block_hash(&self, blockId: BlockId) -> CallFuture<Option<String>, T::Out> {
+    /// TODO Get substrate block hash, this should be the same as block_hash. Refactor later.
+    pub fn fn_block_hash(&self, blockId: BlockId) -> CallFuture<Option<String>, T::Out> {
         let result = match blockId {
             BlockId::Hash(hash) => {
                 // Massbit Note: this isn't called
